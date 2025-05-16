@@ -34,11 +34,11 @@ def launch_setup(context):
     if compiled == 'True':
         peripherals_package_path = get_package_share_directory('peripherals')
         controller_package_path = get_package_share_directory('controller')
-        servo_controller_package_path = get_package_share_directory('servo_controller')
+        # servo_controller_package_path = get_package_share_directory('servo_controller')
     else:
-        peripherals_package_path = '/home/ubuntu/ros2_ws/src/peripherals'
-        controller_package_path = '/home/ubuntu/ros2_ws/src/driver/controller'
-        servo_controller_package_path = '/home/ubuntu/ros2_ws/src/driver/servo_controller'
+        peripherals_package_path = '/home/cat/jetrover/src/peripherals'
+        controller_package_path = '/home/cat/jetrover/src/driver/controller'
+        # servo_controller_package_path = '/home/cat/jetrover/src/driver/servo_controller'
 
     odom_publisher_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(controller_package_path, 'launch/odom_publisher.launch.py')
@@ -62,7 +62,11 @@ def launch_setup(context):
         ekf_param = ReplaceString(source_file=os.path.join(controller_package_path, 'config/ekf.yaml'), replacements={'namespace/': ''})
     else:
         ekf_param = ReplaceString(source_file=os.path.join(controller_package_path, 'config/ekf.yaml'), replacements={"namespace/": (namespace, '/')})
-    
+    # source_file=os.path.join(controller_package_path, 'config/ekf.yaml')
+    # with open(source_file, 'r') as file:
+    #     ekf_param = file.read()
+
+
     ekf_filter_node = Node(
         package='robot_localization',
         executable='ekf_node',
@@ -78,13 +82,13 @@ def launch_setup(context):
         condition=IfCondition(enable_odom),
     )
 
-    servo_controller_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(servo_controller_package_path, 'launch/servo_controller.launch.py')
-        ]),
-        launch_arguments={
-            'base_frame': base_frame,
-        }.items()
-    )
+    # servo_controller_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource([os.path.join(servo_controller_package_path, 'launch/servo_controller.launch.py')
+    #     ]),
+    #     launch_arguments={
+    #         'base_frame': base_frame,
+    #     }.items()
+    # )
 
     return [
         namespace_arg,
@@ -99,7 +103,7 @@ def launch_setup(context):
         imu_filter_launch,
         odom_publisher_launch,
         ekf_filter_node,
-        servo_controller_launch,
+        # servo_controller_launch,
     ]
 
 def generate_launch_description():

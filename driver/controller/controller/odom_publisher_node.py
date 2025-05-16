@@ -78,16 +78,19 @@ class Controller(Node):
         self.linear_x = 0.0
         self.linear_y = 0.0
         self.angular_z = 0.0
+        self.max_x = 0.5
+        self.max_y = 0.0
+        self.max_z = 0.5
         self.pose_yaw = 0
         self.last_time = None
         self.current_time = None
         signal.signal(signal.SIGINT, self.shutdown)
         self.wheel_diameter_mecanum = 0.2
-        self.mecanum = mecanum.MecanumChassis(wheelbase=0, track_width=0.5932, wheel_diameter=self.wheel_diameter_mecanum)
+        self.mecanum = mecanum.MecanumChassis(wheelbase=0, track_width=0.614, wheel_diameter=self.wheel_diameter_mecanum)
 
         # 声明参数
         self.declare_parameter('pub_odom_topic', True)
-        self.declare_parameter('base_frame_id', 'base_footprint')
+        self.declare_parameter('base_frame_id', 'base_link')
         self.declare_parameter('odom_frame_id', 'odom')
         self.declare_parameter('linear_correction_factor', 1.00)
         self.declare_parameter('linear_correction_factor_tank', 0.52)
@@ -121,13 +124,13 @@ class Controller(Node):
 
             threading.Thread(target=self.cal_odom_fun, daemon=True).start()
         self.get_logger().info('\033[1;32m%f %f\033[0m' % (self.linear_factor, self.angular_factor))
-        self.motor_pub = self.create_publisher(MotorsState, 'ros_robot_controller/set_motor', 1)
-        self.servo_state_pub = self.create_publisher(SetBusServoState, 'ros_robot_controller/bus_servo/set_state', 1)
-        self.pose_pub = self.create_publisher(PoseWithCovarianceStamped, 'set_pose', 1)
+        self.motor_pub = self.create_publisher(MotorsState, 'motors_set', 1)
+        # self.servo_state_pub = self.create_publisher(SetBusServoState, 'ros_robot_controller/bus_servo/set_state', 1)
+        # self.pose_pub = self.create_publisher(PoseWithCovarianceStamped, 'set_pose', 1)
         self.create_subscription(Pose2D, 'set_odom', self.set_odom, 1)
         self.create_subscription(Twist, 'controller/cmd_vel', self.cmd_vel_callback, 1)
         self.create_subscription(Twist, 'cmd_vel', self.app_cmd_vel_callback, 1)
-        self.create_service(Trigger, 'controller/load_calibrate_param', self.load_calibrate_param)
+        # self.create_service(Trigger, 'controller/load_calibrate_param', self.load_calibrate_param)
 
         self.create_service(Trigger, '~/init_finish', self.get_node_state)
         self.get_logger().info('\033[1;32m%s\033[0m' % 'start')
@@ -140,13 +143,13 @@ class Controller(Node):
         self.get_logger().info('\033[1;32m%s\033[0m' % 'shutdown')
         rclpy.shutdown()
 
-    def load_calibrate_param(self, request, response):
-        self.linear_factor = self.get_parameter('~linear_correction_factor').value or 1.00
-        self.angular_factor = self.get_parameter('~angular_correction_factor').value or 1.00
-        self.get_logger().info('\033[1;32m%s\033[0m' % 'load_calibrate_param')
+    # def load_calibrate_param(self, request, response):
+    #     self.linear_factor = self.get_parameter('~linear_correction_factor').value or 1.00
+    #     self.angular_factor = self.get_parameter('~angular_correction_factor').value or 1.00
+    #     self.get_logger().info('\033[1;32m%s\033[0m' % 'load_calibrate_param')
 
-        response.success = True
-        return response
+    #     response.success = True
+    #     return response
 
     def set_odom(self, msg):
         self.odom = Odometry()
@@ -172,24 +175,25 @@ class Controller(Node):
         self.pose_pub.publish(pose)
 
     def app_cmd_vel_callback(self, msg):
-        if msg.linear.x > 0.2:
-            msg.linear.x = 0.2
-        if msg.linear.x < -0.2:
-            msg.linear.x = -0.2
-        if msg.linear.y > 0.2:
-            msg.linear.y = 0.2
-        if msg.linear.y < -0.2:
-            msg.linear.y = -0.2
-        if msg.angular.z > 0.5:
-            msg.angular.z = 0.5
-        if msg.angular.z < -0.5:
-            msg.angular.z = -0.5
+        if msg.linear.x > self.max_x:
+            msg.linear.x = self.max_x
+        if msg.linear.x < -self.max_x:
+            msg.linear.x = -self.max_x
+        if msg.linear.y > self.max_y:
+            msg.linear.y = self.max_y
+        if msg.linear.y < -self.max_y:
+            msg.linear.y = -self.max_y
+        if msg.angular.z > self.max_z:
+            msg.angular.z = self.max_z
+        if msg.angular.z < -self.max_z:
+            msg.angular.z = -self.max_z
         self.cmd_vel_callback(msg)
 
     def cmd_vel_callback(self, msg):
         # msg.linear.x *= self.linear_factor
         # msg.linear.y *= self.linear_factor
         # msg.angular.z *= self.angular_factor
+        self.get_logger().info(f'\033[1;32m{msg.linear.x} {msg.linear.y} {msg.angular.z}\033[0m')
         self.linear_x = msg.linear.x
         self.linear_y = msg.linear.y
         if abs(msg.linear.y) > 1e-8:
@@ -240,7 +244,7 @@ class Controller(Node):
             else:
                 self.odom.pose.covariance = ODOM_POSE_COVARIANCE
                 self.odom.twist.covariance = ODOM_TWIST_COVARIANCE
-
+            self.get_logger().debug(f'\033[1;32m{self.odom.pose.pose.position.x} {self.odom.pose.pose.position.y} {self.odom.twist.twist.linear.x} {self.odom.twist.twist.linear.y}\033[0m')
             # self.odom_broadcaster.sendTransform(self.odom_trans)
             self.odom_pub.publish(self.odom)
             self.last_time = self.current_time
@@ -248,7 +252,16 @@ class Controller(Node):
 
 def main():
     node = Controller('odom_publisher')
-    rclpy.spin(node)  # 循环等待ROS2退出
-
+    try:
+        rclpy.spin(node)  # 循环等待ROS2退出
+    except KeyboardInterrupt:
+        node.board.set_motor_speed([[1, 0], [2, 0], [3, 0], [4, 0]])
+        node.destroy_node()
+        rclpy.shutdown()
+        print('shutdown')
+    finally:
+        print('shutdown finish')
+    
+    
 if __name__ == "__main__":
     main()

@@ -67,10 +67,10 @@
       #     3a. Set your "world_frame" to your map_frame value
       #     3b. MAKE SURE something else is generating the odom->base_link transform. Note that this can even be another state
       #         estimation node from robot_localization! However, that instance should *not* fuse the global data.
-      map_frame: namespace/map              # Defaults to "map" if unspecified
-      odom_frame: namespace/odom            # Defaults to "odom" if unspecified
-      base_link_frame: namespace/base_footprint  # Defaults to "base_link" if unspecified
-      world_frame: namespace/odom           # Defaults to the value of odom_frame if unspecified
+      map_frame: map              # Defaults to "map" if unspecified
+      odom_frame: odom            # Defaults to "odom" if unspecified
+      base_link_frame: base_link  # Defaults to "base_link" if unspecified
+      world_frame: odom           # Defaults to the value of odom_frame if unspecified
 
       # The filter accepts an arbitrary number of inputs from each input message type (nav_msgs/Odometry,
       # geometry_msgs/PoseWithCovarianceStamped, geometry_msgs/TwistWithCovarianceStamped,
@@ -161,11 +161,11 @@
       #twist0_rejection_threshold: 2.0
 
       imu0: imu
-      imu0_config: [false, false, false,
-                    false, false, true,
-                    false, false, false,
-                    false, false, true,
-                    false,  false, false]
+      imu0_config: [false, false, false, #x, y, z
+                    false, false, true, # roll, pitch, yaw
+                    false, false, false, #vx, vy, vz
+                    false, false, true, #vroll, vpitch, vyaw
+                    false,  false, false] #ax, ay, az
       imu0_nodelay: false
       imu0_differential: false
       imu0_relative: true
@@ -231,13 +231,13 @@
                                  0.0,    0.0,    0.06, 0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.03, 0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.03, 0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
-                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.06, 0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.16, 0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.025, 0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.025, 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.04, 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.01, 0.0,    0.0,    0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.01, 0.0,    0.0,    0.0,    0.0,
-                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.02, 0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.12, 0.0,    0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.01, 0.0,    0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.01, 0.0,
                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.015]

@@ -12,7 +12,7 @@ def generate_launch_description():
     namespace = LaunchConfiguration('namespace', default='')
     use_namespace = LaunchConfiguration('use_namespace', default='false')
     odom_frame = LaunchConfiguration('odom_frame', default='odom')
-    base_frame = LaunchConfiguration('base_frame', default='base_footprint')
+    base_frame = LaunchConfiguration('base_frame', default='base_link')
     imu_frame = LaunchConfiguration('imu_frame', default='imu_link')
     frame_prefix = LaunchConfiguration('frame_prefix', default='')
 
@@ -28,9 +28,9 @@ def generate_launch_description():
         robot_controller_package_path = get_package_share_directory('ros_robot_controller')
         controller_package_path = get_package_share_directory('controller')
     else:
-        jetrover_description_package_path = '/home/ubuntu/ros2_ws/src/simulations/jetrover_description'
-        robot_controller_package_path = '/home/ubuntu/ros2_ws/src/driver/ros_robot_controller'
-        controller_package_path = '/home/ubuntu/ros2_ws/src/driver/controller'
+        jetrover_description_package_path = '/home/cat/jetrover/src/simulations/jetrover_description'
+        robot_controller_package_path = '/home/cat/jetrover/src/driver/ros_robot_controller'
+        controller_package_path = '/home/cat/jetrover/src/driver/controller'
 
     robot_description_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(jetrover_description_package_path, 'launch/robot_description.launch.py')
@@ -72,8 +72,8 @@ def generate_launch_description():
         base_frame_arg,
         imu_frame_arg,
         frame_prefix_arg,
-        robot_description_launch,
-        robot_controller_launch,
+        # robot_description_launch,
+        # robot_controller_launch,
         odom_publisher_node
     ])
 
